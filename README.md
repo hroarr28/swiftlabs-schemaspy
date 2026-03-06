@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SwiftLabs SaaS Starter
 
-## Getting Started
+Template for building new SwiftLabs products. Clone this, replace the placeholders, ship.
 
-First, run the development server:
+## Quick Start
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Copy this template: `cp -r templates/saas-starter products/your-product`
+2. `cd products/your-product && npm install`
+3. Copy `.env.example` to `.env.local` and fill in your keys
+4. Create a Supabase project and run `supabase/migration.sql`
+5. Replace all `ProductName` / `TEMPLATE` markers with your product details
+6. `npm run dev`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## What's Included
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Landing page** — Hero, features, pricing, FAQ
+- **Auth** — Sign up, log in, forgot/reset password (Supabase)
+- **Dashboard shell** — Protected route with user info
+- **Stripe** — Checkout, customer portal, webhook handler
+- **Middleware** — Route protection (dashboard requires auth)
+- **SEO** — Sitemap, robots.txt, meta tags
+- **Dark theme** — Zinc colour scale, Inter font
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Customisation Checklist
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [ ] Update `layout.tsx` metadata (title, description)
+- [ ] Update `page.tsx` (hero, features, pricing, FAQ)
+- [ ] Update brand colour in `globals.css` (`--color-brand`)
+- [ ] Replace "ProductName" in nav/footer
+- [ ] Add product-specific tables to `supabase/migration.sql`
+- [ ] Create Stripe price ID and wire up checkout
+- [ ] Set env vars in Vercel
+- [ ] Add Terms and Privacy pages
