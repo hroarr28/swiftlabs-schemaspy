@@ -12,7 +12,6 @@
  */
 
 import React, { Component, ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
 import { AlertTriangle } from 'lucide-react'
 
 interface Props {
@@ -101,12 +100,18 @@ function DefaultErrorFallback({ error, reset }: { error: Error | null; reset: ()
         )}
 
         <div className="flex gap-3 justify-center">
-          <Button onClick={reset} variant="default">
+          <button
+            onClick={reset}
+            className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+          >
             Try again
-          </Button>
-          <Button onClick={() => window.location.reload()} variant="outline">
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 border border-gray-300 bg-white text-black rounded-md hover:bg-gray-50 transition-colors"
+          >
             Reload page
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -126,9 +131,12 @@ export function CompactErrorFallback({ error, reset }: { error: Error | null; re
           {process.env.NODE_ENV === 'development' && error && (
             <p className="text-xs text-muted-foreground">{error.message}</p>
           )}
-          <Button onClick={reset} size="sm" variant="outline">
+          <button
+            onClick={reset}
+            className="px-3 py-1.5 text-sm border border-gray-300 bg-white text-black rounded-md hover:bg-gray-50 transition-colors"
+          >
             Retry
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -173,15 +181,24 @@ export function PageErrorFallback({ error, reset }: { error: Error | null; reset
         )}
 
         <div className="flex gap-3 justify-center flex-wrap">
-          <Button onClick={reset} variant="default" size="lg">
+          <button
+            onClick={reset}
+            className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+          >
             Try again
-          </Button>
-          <Button onClick={() => window.location.reload()} variant="outline" size="lg">
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 border border-gray-300 bg-white text-black rounded-lg hover:bg-gray-50 transition-colors"
+          >
             Reload page
-          </Button>
-          <Button onClick={() => (window.location.href = '/')} variant="ghost" size="lg">
+          </button>
+          <button
+            onClick={() => (window.location.href = '/')}
+            className="px-6 py-3 bg-transparent text-black rounded-lg hover:bg-gray-100 transition-colors"
+          >
             Go home
-          </Button>
+          </button>
         </div>
       </div>
     </div>

@@ -10,7 +10,6 @@
  */
 
 import { useEffect } from 'react'
-import { Button } from '@/components/ui/button'
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react'
 
 export default function Error({
@@ -72,14 +71,20 @@ export default function Error({
         )}
 
         <div className="flex gap-3 justify-center flex-wrap">
-          <Button onClick={reset} variant="default" size="lg">
+          <button
+            onClick={reset}
+            className="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
             Try again
-          </Button>
-          <Button onClick={() => (window.location.href = '/')} variant="outline" size="lg">
+          </button>
+          <button
+            onClick={() => (window.location.href = '/')}
+            className="inline-flex items-center px-6 py-3 border border-gray-300 bg-white text-black rounded-lg hover:bg-gray-50 transition-colors"
+          >
             <Home className="h-4 w-4 mr-2" />
             Go home
-          </Button>
+          </button>
         </div>
 
         <p className="text-xs text-muted-foreground">
