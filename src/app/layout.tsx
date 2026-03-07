@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const inter = Inter({
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased bg-zinc-950 text-zinc-300`}
       >
+        <Toaster position="top-right" richColors />
         {children}
         {/* TEMPLATE: SwiftLabs analytics — set NEXT_PUBLIC_PRODUCT_SLUG in .env */}
         <script
