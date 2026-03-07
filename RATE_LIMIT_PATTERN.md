@@ -505,17 +505,171 @@ When migrating from in-memory to Redis:
 - [ ] Set appropriate TTL values (use `EXPIRE` command)
 - [ ] Consider Redis connection pooling for high traffic
 
+## Real-World Pattern: Rate Limit + Quota Enforcement
+
+**From Screenshot API (production pattern):**
+
+Most SaaS APIs need both rate limiting (prevent abuse) and quota enforcement (subscription limits). Here's the combined pattern:
+
+```typescript
+// app/api/screenshot/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+
+// Simple in-memory rate limiter per user
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(userId: string): { 
+  success: boolean; 
+  limit: number; 
+  remaining: number; 
+  reset: number 
+} {
+  const now = Date.now();
+  const limit = 60; // 60 requests per minute per user
+  const window = 60 * 1000;
+  
+  const current = rateLimitStore.get(userId);
+  
+  if (!current || current.resetTime < now) {
+    rateLimitStore.set(userId, { count: 1, resetTime: now + window });
+    return { success: true, limit, remaining: limit - 1, reset: now + window };
+  }
+  
+  if (current.count >= limit) {
+    return { success: false, limit, remaining: 0, reset: current.resetTime };
+  }
+  
+  current.count++;
+  return { success: true, limit, remaining: limit - current.count, reset: current.resetTime };
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // 1. Authenticate user (via API key, session, etc.)
+    const userId = await authenticateRequest(request);
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    
+    // 2. Check rate limit (prevent abuse)
+    const { success, limit, remaining, reset } = checkRateLimit(userId);
+    
+    if (!success) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded',
+          limit,
+          remaining: 0,
+          reset: new Date(reset).toISOString(),
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': reset.toString(),
+            'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString(),
+          },
+        }
+      );
+    }
+    
+    // 3. Check subscription quota (enforce plan limits)
+    const supabase = await createClient();
+    
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('tier, screenshots_included, screenshots_used')
+      .eq('user_id', userId)
+      .single();
+    
+    if (!subscription) {
+      return NextResponse.json(
+        { error: 'No active subscription' },
+        { status: 403 }
+      );
+    }
+    
+    if (subscription.screenshots_used >= subscription.screenshots_included) {
+      return NextResponse.json(
+        { 
+          error: 'Quota exceeded',
+          quota: {
+            included: subscription.screenshots_included,
+            used: subscription.screenshots_used,
+            tier: subscription.tier,
+          },
+          message: 'Upgrade your plan to get more screenshots',
+        },
+        { status: 403 }
+      );
+    }
+    
+    // 4. Process the request
+    const result = await processScreenshot(request);
+    
+    // 5. Track usage
+    await supabase.rpc('increment_screenshot_usage', { p_user_id: userId });
+    
+    // 6. Return result with rate limit headers
+    return new NextResponse(result, {
+      status: 200,
+      headers: {
+        'X-RateLimit-Limit': limit.toString(),
+        'X-RateLimit-Remaining': remaining.toString(),
+        'X-RateLimit-Reset': reset.toString(),
+        'X-Quota-Included': subscription.screenshots_included.toString(),
+        'X-Quota-Used': (subscription.screenshots_used + 1).toString(),
+      },
+    });
+    
+  } catch (error) {
+    console.error('API error:', error);
+    return NextResponse.json(
+      { error: 'Request failed' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### When to Use This Pattern
+
+**Use combined rate limit + quota when:**
+- ✅ Your API consumes resources (compute, storage, API calls)
+- ✅ You have tiered pricing with different quotas
+- ✅ You need to prevent both abuse AND overage
+- ✅ Example: Screenshot API, PDF Generator, Email Sender
+
+**Use rate limit only when:**
+- ✅ No resource consumption per request (reads, searches)
+- ✅ No subscription tiers or quotas
+- ✅ Example: Auth endpoints, public APIs, webhooks
+
+**Use quota only when:**
+- ✅ Requests are expensive but not abuse-prone
+- ✅ Rate limiting handled by infrastructure (Vercel, Cloudflare)
+- ✅ Example: AI API calls, third-party API proxies
+
 ## Summary
 
-- ✅ Use `rateLimiters.standard` for most API routes
+- ✅ Use `rateLimiters.standard` for most API routes (middleware approach)
 - ✅ Use `rateLimiters.strict` for auth/sensitive endpoints
+- ✅ Use combined rate limit + quota for resource-intensive APIs
 - ✅ In-memory works great for MVP and single-instance deploys
 - ✅ Migrate to Redis when scaling to serverless/multi-instance
 - ✅ Always return helpful error messages and `Retry-After` headers
+- ✅ Include quota info in response headers for client transparency
 - ✅ Test rate limits in development before production
 
 **Next Steps:**
 1. Apply rate limiting to existing API routes
-2. Test limits match your expected traffic patterns
-3. Monitor 429 responses in production logs
-4. Migrate to Redis when needed (Upstash recommended for Vercel)
+2. Add quota enforcement if you have tiered pricing
+3. Test limits match your expected traffic patterns
+4. Monitor 429 and 403 responses in production logs
+5. Migrate to Redis when needed (Upstash recommended for Vercel)
