@@ -1,12 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { SignOutButton } from "./sign-out-button";
+import { UsageMeter } from "@/components/usage-meter";
+import { getCurrentUsage } from "@/lib/usage";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) redirect("/auth/login");
+
+  // Get user's current usage
+  const usage = await getCurrentUsage(user.id);
 
   return (
     <div className="min-h-screen">
@@ -25,6 +30,15 @@ export default async function DashboardPage() {
       <main className="max-w-4xl mx-auto px-6 py-12">
         <h1 className="text-2xl font-semibold text-zinc-100 mb-2">Dashboard</h1>
         <p className="text-sm text-zinc-500 mb-8">Welcome back. This is your dashboard shell.</p>
+
+        {/* Usage Meter */}
+        <div className="mb-8">
+          <UsageMeter
+            usage={usage.usage}
+            limit={usage.limit}
+            featureName="credits"
+          />
+        </div>
 
         {/* TEMPLATE: Add your product-specific dashboard content here */}
         <div className="p-8 rounded-lg border border-zinc-800 border-dashed text-center">
