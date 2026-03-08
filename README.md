@@ -1,73 +1,135 @@
-# SwiftLabs SaaS Starter
+# Schema Spy
 
-Template for building new SwiftLabs products. Clone this, replace the placeholders, ship.
+Database schema visualization tool. Upload SQL dumps and get interactive ER diagrams + documentation exports.
 
-## Quick Start
+## Features
 
-1. Copy this template: `cp -r templates/saas-starter products/your-product`
-2. `cd products/your-product && npm install`
-3. Copy `.env.example` to `.env.local` and fill in your keys
-4. Create a Supabase project and run `supabase/migration.sql`
-5. Replace all `ProductName` / `TEMPLATE` markers with your product details
-6. `npm run dev`
+- 🗂️ Upload SQL dumps (PostgreSQL, MySQL, SQLite, SQL Server)
+- 📊 Interactive ER diagrams with ReactFlow
+- 📤 Export as PNG, Markdown, and PDF
+- 🔐 Stripe subscription billing (£8/month)
+- 🎨 Clean, minimal UI
 
-## What's Included
+## Tech Stack
 
-- **Landing page** — Hero, features, pricing, FAQ
-- **Auth** — Sign up, log in, forgot/reset password (Supabase)
-- **Dashboard shell** — Protected route with user info
-- **Stripe** — Checkout, customer portal, webhook handler
-- **Middleware** — Route protection (dashboard requires auth)
-- **SEO** — Sitemap, robots.txt, meta tags
-- **Dark theme** — Zinc colour scale, Inter font
+- **Framework:** Next.js 16 (App Router)
+- **Database:** Supabase (PostgreSQL)
+- **Auth:** Supabase Auth
+- **Payments:** Stripe Checkout + Customer Portal
+- **Diagrams:** ReactFlow
+- **Exports:** html2canvas (PNG), jsPDF (PDF)
+- **Deployment:** Vercel
 
-## Production-Tested Patterns
+## Setup
 
-This template includes 9 battle-tested patterns from live SwiftLabs products. All patterns have been validated in production and are ready to use.
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-### Infrastructure Patterns
+2. **Configure environment variables:**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Fill in:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (for webhooks)
+   - `STRIPE_SECRET_KEY`
+   - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+   - `STRIPE_WEBHOOK_SECRET`
+   - `STRIPE_PRICE_ID` (after creating Stripe product)
 
-| Pattern | Status | Use When | Production Examples |
-|---------|--------|----------|---------------------|
-| **RATE_LIMIT_PATTERN.md** | ✅ Production-tested | Protecting API endpoints from abuse | Screenshot API (quota enforcement) |
-| **ERROR_BOUNDARY_PATTERN.md** | ✅ Production-ready | Graceful error handling in React components | All SwiftLabs products |
-| **FEATURE_FLAGS_PATTERN.md** | ✅ Production-tested | Plan-based access control, gradual rollouts | Screenshot API, Uptime Monitor (10 flags each) |
-| **FORM_VALIDATION_PATTERN.md** | ✅ Production-tested | Client + server validation with Zod | Screenshot API (15+ schemas) |
-| **RESOURCE_CRUD_PATTERN.md** | ⚠️ Template only | Dashboard CRUD operations | Template exists, needs customization per product |
+3. **Run database migrations:**
+   ```bash
+   # Connect to Supabase and run all .sql files in supabase/migrations/
+   ```
 
-### Content/SEO Patterns
+4. **Create Stripe product:**
+   ```bash
+   # Via Stripe Dashboard:
+   # 1. Create product "Schema Spy Pro"
+   # 2. Add £8/month recurring price
+   # 3. Copy price ID to STRIPE_PRICE_ID in .env.local
+   ```
 
-| Pattern | Status | Use When | Production Examples |
-|---------|--------|----------|---------------------|
-| **BLOG_GENERATOR_PATTERN.md** | ✅ Production-tested | Building SEO content | Uptime Monitor (5 articles, 15.5k words) |
-| **OG_IMAGE_PATTERN.md** | ✅ Infrastructure ready | Dynamic social preview images | Template included (5 variants), not yet adopted |
-| **EXPORT_FORMAT_PATTERN.md** | ✅ Production-ready | CSV/JSON data export features | Ready for use, no production examples yet |
-| **PDF_EXPORT_PATTERN.md** | ✅ Production-tested | Generating branded PDF documents | BriefBuilder (custom content briefs) |
+5. **Configure Stripe webhook:**
+   ```bash
+   # In Stripe Dashboard:
+   # Add webhook endpoint: https://your-domain.com/api/webhooks/stripe
+   # Select events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted
+   # Copy webhook secret to STRIPE_WEBHOOK_SECRET in .env.local
+   ```
 
-### Pattern Usage Notes
+6. **Run development server:**
+   ```bash
+   npm run dev
+   ```
 
-**✅ Production-tested** — Used in live products, proven to work, use as-is  
-**✅ Production-ready** — Fully implemented, tested, ready to use  
-**⚠️ Template only** — Generic template included, needs product-specific customization
+## Deployment
 
-**RESOURCE_CRUD_PATTERN.md customization:**
-- Rename `lib/actions/resources.ts` to match your domain (e.g., `monitors.ts`, `screenshots.ts`, `briefs.ts`)
-- Update types and table references
-- Add product-specific fields and validation
+1. **Deploy to Vercel:**
+   ```bash
+   vercel --prod
+   ```
 
-**Additional Pattern Resources:**
-- All patterns include detailed documentation with code examples
-- Screenshot API has the most comprehensive implementation (rate limiting, feature flags, form validation)
-- BriefBuilder demonstrates advanced PDF export with custom styling
-- Uptime Monitor shows complete blog pattern implementation
+2. **Set environment variables in Vercel:**
+   - All variables from `.env.local`
+   - Set `SUPABASE_SERVICE_ROLE_KEY` (for webhooks)
 
-## Customisation Checklist
+3. **Update Stripe webhook URL:**
+   - Change to production domain in Stripe Dashboard
 
-- [ ] Update `layout.tsx` metadata (title, description)
-- [ ] Update `page.tsx` (hero, features, pricing, FAQ)
-- [ ] Update brand colour in `globals.css` (`--color-brand`)
-- [ ] Replace "ProductName" in nav/footer
-- [ ] Add product-specific tables to `supabase/migration.sql`
-- [ ] Create Stripe price ID and wire up checkout
-- [ ] Set env vars in Vercel
-- [ ] Add Terms and Privacy pages
+4. **Test checkout flow:**
+   - Use test card: `4242 4242 4242 4242`
+   - Verify subscription created in Supabase
+
+## Database Schema
+
+**Tables:**
+- `schemaspy_projects` — User projects
+- `schemaspy_tables` — Parsed tables
+- `schemaspy_columns` — Table columns
+- `schemaspy_indexes` — Table indexes
+- `schemaspy_relationships` — Foreign key relationships
+- `schemaspy_subscriptions` — Stripe subscription data
+
+## Development Status
+
+✅ **Complete:**
+- Authentication (login/signup)
+- Dashboard with project list
+- SQL upload and parsing
+- ER diagram visualization
+- Schema browser sidebar
+- Export to PNG/Markdown/PDF
+- Stripe checkout integration
+- Subscription gating
+- Customer portal access
+- Webhook handling
+
+🚧 **Remaining for launch:**
+- [ ] Run migrations on Supabase
+- [ ] Create Stripe product (£8/month)
+- [ ] Configure webhook in Stripe
+- [ ] Test checkout flow end-to-end
+- [ ] Test with production SQL dumps
+- [ ] Deploy to Vercel
+- [ ] Update landing page copy
+- [ ] Add sitemap and robots.txt
+- [ ] Final QA pass
+
+## Testing
+
+Test SQL dump available at: `test-data/sample-schema.sql`
+
+To test locally:
+1. Sign up for an account
+2. Upload `test-data/sample-schema.sql`
+3. Verify ER diagram shows all tables and relationships
+4. Test export features (PNG, Markdown, PDF)
+
+## Support
+
+For issues, email: help@schemaspy.dev (to be configured)

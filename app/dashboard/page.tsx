@@ -7,6 +7,9 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import UploadForm from '@/components/dashboard/upload-form';
 import ProjectList from '@/components/dashboard/project-list';
+import Paywall from '@/components/paywall';
+import BillingButton from '@/components/billing-button';
+import { hasActiveSubscription } from '@/lib/subscriptions';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -15,6 +18,13 @@ export default async function DashboardPage() {
   
   if (!user) {
     redirect('/login');
+  }
+
+  // Check subscription status
+  const isSubscribed = await hasActiveSubscription();
+  
+  if (!isSubscribed) {
+    return <Paywall />;
   }
 
   // Fetch user's projects
@@ -36,6 +46,7 @@ export default async function DashboardPage() {
             <h1 className="text-2xl font-bold text-blue-600">Schema Spy</h1>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">{user.email}</span>
+              <BillingButton />
               <form action="/auth/signout" method="post">
                 <button
                   type="submit"

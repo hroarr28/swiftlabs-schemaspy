@@ -3,6 +3,7 @@
  */
 
 import Link from 'next/link';
+import CheckoutButton from '@/components/checkout-button';
 
 export default function PricingPage() {
   return (
@@ -48,12 +49,7 @@ export default function PricingPage() {
                   <span className="text-5xl font-bold text-gray-900">£8</span>
                   <span className="text-gray-600 ml-2">/month</span>
                 </div>
-                <Link
-                  href="/signup"
-                  className="block w-full bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors"
-                >
-                  Get started →
-                </Link>
+                <CheckoutButton requiresAuth />
               </div>
 
               <div className="space-y-4">

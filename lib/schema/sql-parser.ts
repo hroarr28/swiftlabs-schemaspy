@@ -188,6 +188,40 @@ export async function parseSQLDump(sql: string): Promise<ParsedSchema> {
     }
   }
   
+  // Parse foreign key relationships from ALTER TABLE statements
+  const alterTableRegex = /ALTER\s+TABLE\s+(?:(\w+)\.)?(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(([^)]+)\)\s+REFERENCES\s+(?:(\w+)\.)?(\w+)\s*\(([^)]+)\)/gi;
+  
+  let fkMatch;
+  while ((fkMatch = alterTableRegex.exec(sql)) !== null) {
+    const sourceSchema = fkMatch[1] || 'public';
+    const sourceTable = fkMatch[2];
+    const constraintName = fkMatch[3];
+    const sourceColumns = fkMatch[4].split(',').map(c => c.trim().replace(/['"]/g, ''));
+    const targetSchema = fkMatch[5] || 'public';
+    const targetTable = fkMatch[6];
+    const targetColumns = fkMatch[7].split(',').map(c => c.trim().replace(/['"]/g, ''));
+    
+    // Create relationships for each column pair
+    for (let i = 0; i < sourceColumns.length; i++) {
+      relationships.push({
+        constraintName: `${constraintName}_${i}`,
+        sourceTable: `${sourceSchema}.${sourceTable}`,
+        sourceColumn: sourceColumns[i],
+        targetTable: `${targetSchema}.${targetTable}`,
+        targetColumn: targetColumns[i] || targetColumns[0],
+      });
+      
+      // Mark source column as foreign key
+      const table = tables.find(t => t.name === sourceTable && t.schema === sourceSchema);
+      if (table) {
+        const column = table.columns.find(c => c.name === sourceColumns[i]);
+        if (column) {
+          column.isForeignKey = true;
+        }
+      }
+    }
+  }
+  
   // If no tables found, return at least one example to show something works
   if (tables.length === 0) {
     tables.push({

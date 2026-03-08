@@ -8,6 +8,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import ERDiagram from '@/components/dashboard/er-diagram';
 import SchemaInfo from '@/components/dashboard/schema-info';
+import ExportButtons from '@/components/dashboard/export-buttons';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -113,12 +114,22 @@ export default async function ProjectPage({ params }: Props) {
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-sm border">
               <div className="p-4 border-b">
-                <h2 className="text-lg font-semibold">Entity Relationship Diagram</h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Interactive schema visualization
-                </p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-lg font-semibold">Entity Relationship Diagram</h2>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Interactive schema visualization
+                    </p>
+                  </div>
+                  <ExportButtons
+                    projectName={project.name}
+                    tables={tables || []}
+                    relationships={relationships || []}
+                    diagramElementId="er-diagram-container"
+                  />
+                </div>
               </div>
-              <div className="h-[600px]">
+              <div id="er-diagram-container" className="h-[600px]">
                 <ERDiagram
                   tables={tables || []}
                   relationships={relationships || []}
