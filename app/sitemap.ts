@@ -4,6 +4,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://schemaspy.swiftlabs.dev';
   const now = new Date();
 
+  const blogArticles = [
+    'how-to-visualize-database-schema',
+    'er-diagram-tools-comparison-2026',
+    'database-documentation-best-practices',
+  ];
+
   return [
     {
       url: baseUrl,
@@ -17,6 +23,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    ...blogArticles.map((slug) => ({
+      url: `${baseUrl}/blog/${slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    })),
     {
       url: `${baseUrl}/login`,
       lastModified: now,
