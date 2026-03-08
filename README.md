@@ -116,8 +116,8 @@ Database schema visualization tool. Upload SQL dumps and get interactive ER diag
 - [ ] Test checkout flow end-to-end
 - [ ] Test with production SQL dumps
 - [ ] Deploy to Vercel
-- [ ] Update landing page copy
-- [ ] Add sitemap and robots.txt
+- [x] Update landing page copy
+- [x] Add sitemap and robots.txt
 - [ ] Final QA pass
 
 ## Testing
